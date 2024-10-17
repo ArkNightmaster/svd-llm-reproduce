@@ -197,7 +197,7 @@ def whitening(model_name, model, profiling_mat, ratio, dev):
         layer = layers[i]
         subset = find_layers(layer)
         #### Replace Attn, MLP ####
-        if "llama" in model_name or "vicuna" in model_name:
+        if "llama" in model_name or "vicuna" in model_name or "Llama" in model_name:
             svd_attn = SVD_LlamaAttention(config=model.config, ratio=ratio)
             svd_mlp = SVD_LlamaMLP(hidden_size=layer.hidden_size, intermediate_size=model.config.intermediate_size, hidden_act=model.config.hidden_act, ratio=ratio)
         elif "mistral" in model_name:
@@ -513,7 +513,7 @@ if __name__ == '__main__':
     parser.add_argument('--whitening_nsamples', type=int, default=256, help='Number of calibration data samples for whitening.')
     parser.add_argument('--updating_nsamples', type=int, default=16, help='Number of calibration data samples for udpating.')
     parser.add_argument('--save_path', type=str, default=None, help='the path to save the compressed model checkpoints.`')
-    parser.add_argument('--profiling_mat_path', type=str, default=None, help='Local path to load the profiling matrices`')
+    parser.add_argument('--profiling_mat_path', type=str, default='_data_Llama_3_profiling_wikitext2_256_3.pt', help='Local path to load the profiling matrices`')
     parser.add_argument('--seed',type=int, default=0, help='Seed for sampling the calibration data')
     parser.add_argument('--DEV', type=str, default="cuda", help='device')
     parser.add_argument('--model_seq_len', type=int, default=2048, help='the default sequence length of the LLM')
@@ -523,7 +523,7 @@ if __name__ == '__main__':
     parser.add_argument('--lora', type=str, default=None, help='the lora updated weight path to run the accuracy evaluation')
     
     args = parser.parse_args()
-    args.ratio = 1- args.ratio
+    args.ratio = 1 - args.ratio
     if args.step == 1:
         model, tokenizer = get_model_from_huggingface(model_id=args.model)
         model = model.eval()
