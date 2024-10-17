@@ -9,11 +9,11 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 parent_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(current_path)
 
-def get_calib_train_data(name, tokenizer, nsamples, seqlen=2048, seed=3, batch_size=1, dataset_cache_dir=None):
+def get_calib_train_data(dataset_name, tokenizer, nsamples, seqlen=2048, seed=3, batch_size=1, dataset_cache_dir=None):
     import random
     random.seed(seed)
     cache_file = (
-        f"cache/{name}_{nsamples}_{seqlen}_{seed}_{batch_size}.pt"
+        f"cache/{dataset_name}_{nsamples}_{seqlen}_{seed}_{batch_size}.pt"
     )
     nsamples += 1 #############################
     if not os.path.exists("cache"):
@@ -21,13 +21,13 @@ def get_calib_train_data(name, tokenizer, nsamples, seqlen=2048, seed=3, batch_s
     if os.path.exists(cache_file):
         traindataset = torch.load(cache_file)
         return traindataset
-    if name == "c4":
-        traindata = load_dataset("json", data_files="utils/c4-train.json")['train']
+    if dataset_name == "c4":
+        traindata = load_dataset("c4", "en", streaming=True, cache_dir=dataset_cache_dir, trust_remote_code=True, split='train')
         tot_text = "\n\n".join(traindata["text"])
-    elif name == "ptb":
+    elif dataset_name == "ptb":
         traindata = load_dataset('ptb_text_only', 'penn_treebank', split='train', cache_dir=dataset_cache_dir)
         tot_text = "\n\n".join(traindata["sentence"])
-    elif name == "wikitext2":
+    elif dataset_name == "wikitext2":
         traindata = load_dataset("wikitext", "wikitext-2-raw-v1", split="train", cache_dir=dataset_cache_dir)
         tot_text = "\n\n".join(traindata["text"])
     else:

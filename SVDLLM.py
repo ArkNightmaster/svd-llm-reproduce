@@ -1,5 +1,7 @@
 #coding:utf8
 import os
+os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com/'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 import sys
 import argparse
 import torch.jit
@@ -507,6 +509,7 @@ if __name__ == '__main__':
     parser.add_argument('--ratio', type=float, default=0.2, help='Target compression ratio,(0,1), default=0.2, means only keeping about 20% of the params.')
     parser.add_argument('--run_low_resource', action='store_true', help='whether to run whitening in low resource, exp, compress LLaMA-7B below 15G gpu')
     parser.add_argument('--dataset', type=str, default='wikitext2',help='Where to extract calibration data from [wikitext2, ptb, c4]')
+    parser.add_argument('--dataset_cache_dir', type=str, default='/data/ldz/data', help='The cache directory of the dataset')
     parser.add_argument('--whitening_nsamples', type=int, default=256, help='Number of calibration data samples for whitening.')
     parser.add_argument('--updating_nsamples', type=int, default=16, help='Number of calibration data samples for udpating.')
     parser.add_argument('--save_path', type=str, default=None, help='the path to save the compressed model checkpoints.`')
@@ -525,7 +528,7 @@ if __name__ == '__main__':
         model, tokenizer = get_model_from_huggingface(model_id=args.model)
         model = model.eval()
         if args.profiling_mat_path is None:
-            cali_white_data = get_calib_train_data(args.dataset, tokenizer, args.whitening_nsamples, seqlen=args.model_seq_len)
+            cali_white_data = get_calib_train_data(args.dataset, tokenizer, args.whitening_nsamples, seqlen=args.model_seq_len, dataset_cache_dir=args.dataset_cache_dir)
             profiling_mat = profle_svdllm_low_resource(args.model, model, cali_white_data, args.DEV)
             if args.save_path is not None:
                 torch.save(profiling_mat, args.save_path + "/" + args.model.replace("/", "_").replace("-", "_") + '_profiling_'+ args.dataset + '_' + str(args.whitening_nsamples)  + '_' + str(args.seed)+ '.pt')
